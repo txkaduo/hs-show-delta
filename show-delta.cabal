@@ -2,7 +2,6 @@ name:                show-delta
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/show-delta#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Gilbert Fine
@@ -62,4 +61,4 @@ test-suite th-records-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/show-delta
+  location: git@github.com:txkaduo/hs-show-delta.git

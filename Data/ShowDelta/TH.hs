@@ -1,8 +1,12 @@
 module Data.ShowDelta.TH
-  ( deriveShowDelta
+  ( deriveShowDelta, deriveShowDeltaOpts
+  , Options(..)
+  , lowerHead
   ) where
 
 import Control.Monad
+import Data.Char (toLower)
+import Data.Default (Default(..))
 import Data.Monoid
 import Data.Maybe
 import Data.String
@@ -16,8 +20,20 @@ import Language.Haskell.TH.Syntax
 import Data.ShowDelta.Class
 
 
+data Options = Options
+  { optFieldLabelModifier :: String -> String
+  , optConstructorTagModifier :: String -> String
+  }
+
+instance Default Options where
+  def = Options id id
+
+
 deriveShowDelta :: Name -> Q [Dec]
-deriveShowDelta ty =
+deriveShowDelta = deriveShowDeltaOpts def
+
+deriveShowDeltaOpts :: Options -> Name -> Q [Dec]
+deriveShowDeltaOpts opts ty =
   do (TyConI tyCon) <- reify ty
      (tyConName, tyVars, cs) <- case tyCon of
          DataD _ nm tyVars Nothing cs _   -> return (nm, tyVars, cs)
@@ -27,21 +43,21 @@ deriveShowDelta ty =
      let (KindedTV tyVar StarT) = last tyVars
          instanceType           = conT ''ShowDelta `appT` (foldl apply (conT tyConName) tyVars)
 
-     sequence [instanceD (return []) instanceType [genShowDelta cs]]
+     sequence [instanceD (return []) instanceType [genShowDelta opts cs]]
   where
     apply t (PlainTV name)    = appT t (varT name)
     apply t (KindedTV name _) = appT t (varT name)
 
 
-genShowDelta :: [Con] -> Q Dec
-genShowDelta cs
-  = do funD 'showDelta (map (uncurry genShowDeltaClause) two_cs)
+genShowDelta :: Options -> [Con] -> Q Dec
+genShowDelta opts cs
+  = do funD 'showDelta (map (uncurry $ genShowDeltaClause opts) two_cs)
        where
          two_cs = [ (x1, x2) | x1 <- cs, x2 <- cs ]
 
 
-genShowDeltaClause :: Con -> Con -> Q Clause
-genShowDeltaClause cX@(NormalC nameX fieldTypesX) cY@(NormalC nameY fieldTypesY)
+genShowDeltaClause :: Options -> Con -> Con -> Q Clause
+genShowDeltaClause opts cX@(NormalC nameX fieldTypesX) cY@(NormalC nameY fieldTypesY)
   = do x <- newName "x"
        y <- newName "y"
        fieldNamesX <- replicateM (length fieldTypesX) (newName "xField")
@@ -66,9 +82,9 @@ genShowDeltaClause cX@(NormalC nameX fieldTypesX) cY@(NormalC nameY fieldTypesY)
                                 |]
                   clause pats body []
 
-    where sNameX = nameBase nameX
+    where sNameX = optConstructorTagModifier opts $ nameBase nameX
 
-genShowDeltaClause cX@(RecC nameX nameBangTypesX) cY@(RecC nameY nameBangTypesY)
+genShowDeltaClause opts cX@(RecC nameX nameBangTypesX) cY@(RecC nameY nameBangTypesY)
   = do x <- newName "x"
        y <- newName "y"
        fieldNamesX <- replicateM (length nameBangTypesX) (newName "xField")
@@ -94,5 +110,10 @@ genShowDeltaClause cX@(RecC nameX nameBangTypesX) cY@(RecC nameY nameBangTypesY)
                   clause pats body []
 
   where
-    sNameX = nameBase nameX
-    nameNamesX = map (\ (x1, _, _) -> nameBase x1) nameBangTypesX
+    sNameX = optConstructorTagModifier opts $ nameBase nameX
+    nameNamesX = map (\ (x1, _, _) -> optFieldLabelModifier opts $ nameBase x1) nameBangTypesX
+
+
+lowerHead :: String -> String
+lowerHead [] = []
+lowerHead (x:xs) = toLower x : xs

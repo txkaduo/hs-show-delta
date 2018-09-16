@@ -1,0 +1,65 @@
+name:                show-delta
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/githubuser/show-delta#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Gilbert Fine
+maintainer:          gilbert.fine@gmail.com
+copyright:           2018 Gilbert Fine
+category:            Data
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      .
+  exposed-modules:     Data.ShowDelta.Class
+                       Data.ShowDelta.TH
+                       Data.ShowDelta
+
+  build-depends:       base >= 4.7 && < 5
+                     , template-haskell
+                     , text
+                     , unicode-show
+                     , time
+                     , bytestring
+                     , base16-bytestring
+
+  default-language:    Haskell2010
+
+  default-extensions: TemplateHaskell
+                      QuasiQuotes
+                      OverloadedStrings
+                      CPP
+                      MultiParamTypeClasses
+                      TypeFamilies
+                      GADTs
+                      GeneralizedNewtypeDeriving
+                      FlexibleContexts
+                      FlexibleInstances
+                      DefaultSignatures
+
+test-suite th-records-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , show-delta
+                     , hspec
+                     , QuickCheck
+                     , text
+
+  other-modules:     Data.ShowDelta.THSpec
+
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -j
+  default-language:    Haskell2010
+
+  default-extensions: TemplateHaskell
+                      OverloadedStrings
+
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/show-delta

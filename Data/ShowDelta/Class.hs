@@ -1,6 +1,6 @@
 module Data.ShowDelta.Class
   ( ShowDelta(..)
-  , defaultShowDelta, defaultShowListDelta
+  , defaultShowDelta, defaultShowDelta', defaultShowListDelta
   ) where
 
 import Control.Monad
@@ -28,10 +28,12 @@ class ShowDelta a where
 
 
 defaultShowDelta :: (Eq a, Show a) => a -> a -> Maybe Text
-defaultShowDelta x y = do
-  guard $ x /= y
-  return $ fromString $ ushow x <> " => " <> ushow y
+defaultShowDelta = defaultShowDelta' (fromString . ushow)
 
+defaultShowDelta' :: (Eq a) => (a -> Text) -> a -> a -> Maybe Text
+defaultShowDelta' show_func x y = do
+  guard $ x /= y
+  return $ show_func x <> " => " <> show_func y
 
 defaultShowListDelta :: (ShowDelta a, Show a) => [a] -> [a] -> Maybe Text
 defaultShowListDelta xs0 ys0 = do

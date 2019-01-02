@@ -87,6 +87,8 @@ instance ShowDelta Double
 instance ShowDelta Rational
 instance ShowDelta UTCTime
 instance ShowDelta LocalTime
+instance ShowDelta Day
+instance ShowDelta TimeOfDay
 instance ShowDelta NominalDiffTime
 
 instance ShowDelta B.ByteString where

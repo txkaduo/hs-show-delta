@@ -11,6 +11,7 @@ import Data.Int
 import Data.String
 import Data.Text (Text, intercalate)
 import Data.Time
+import Database.PostgreSQL.Simple.Time (Unbounded(..))
 import qualified Data.Text.Lazy as LT
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as C8
@@ -90,6 +91,7 @@ instance ShowDelta LocalTime
 instance ShowDelta Day
 instance ShowDelta TimeOfDay
 instance ShowDelta NominalDiffTime
+instance (Eq a, Show a) => ShowDelta (Unbounded a)
 
 instance ShowDelta B.ByteString where
   showDelta = showDelta `on` (C8.unpack . B16.encode)

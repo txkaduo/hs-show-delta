@@ -7,15 +7,13 @@ module Data.ShowDelta.TH
 import Control.Monad
 import Data.Char (toLower)
 import Data.Default (Default(..))
-import Data.Monoid
 import Data.Maybe
 import Data.String
-import Data.Text (Text, intercalate)
+import Data.Text (intercalate)
 import qualified Data.Text as T
 import Text.Show.Unicode (ushow)
 
 import Language.Haskell.TH
-import Language.Haskell.TH.Syntax
 
 import Data.ShowDelta.Class
 
@@ -40,7 +38,7 @@ deriveShowDeltaOpts opts ty =
          NewtypeD _ nm tyVars Nothing c _ -> return (nm, tyVars, [c])
          _ -> fail "deriveShowDelta: tyCon may not be a type synonym."
 
-     let (KindedTV tyVar StarT) = last tyVars
+     let (KindedTV _tyVar StarT) = last tyVars
          instanceType           = conT ''ShowDelta `appT` (foldl apply (conT tyConName) tyVars)
 
      sequence [instanceD (return []) instanceType [genShowDelta opts cs]]
@@ -113,6 +111,7 @@ genShowDeltaClause opts cX@(RecC nameX nameBangTypesX) cY@(RecC nameY nameBangTy
     sNameX = optConstructorTagModifier opts $ nameBase nameX
     nameNamesX = map (\ (x1, _, _) -> optFieldLabelModifier opts $ nameBase x1) nameBangTypesX
 
+genShowDeltaClause _ x y = fail $ "show delta does not support these types: " <> show x <> " and " <> show y
 
 lowerHead :: String -> String
 lowerHead [] = []

@@ -4,8 +4,8 @@ module Data.ShowDelta.Class
   ) where
 
 import Control.Monad
+import Data.Fixed (Fixed, HasResolution)
 import Data.Function (on)
-import Data.Monoid
 import Data.Maybe
 import Data.Int
 import Data.String
@@ -71,6 +71,8 @@ instance (ShowDelta a, ShowDelta b, ShowDelta c) => ShowDelta (a, b, c) where
     pure $ "(" <> intercalate ", " (map (fromMaybe "_") mdeltas) <> ")"
     where mdeltas = [ showDelta x1 y1, showDelta x2 y2, showDelta x3 y3 ]
 
+instance HasResolution a => ShowDelta (Fixed a) where
+  showDelta = defaultShowDelta
 
 instance ShowDelta Bool
 instance ShowDelta Char

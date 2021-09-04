@@ -18,7 +18,7 @@ import qualified Data.ByteString.Char8 as C8
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Base16 as B16
-import qualified Data.ByteString.Base16.Lazy as LB16
+import qualified Data.ByteString.Lazy.Base16 as LB16
 import Text.Show.Unicode (ushow)
 
 
@@ -96,10 +96,10 @@ instance ShowDelta NominalDiffTime
 instance (Eq a, Show a) => ShowDelta (Unbounded a)
 
 instance ShowDelta B.ByteString where
-  showDelta = showDelta `on` (C8.unpack . B16.encode)
+  showDelta = showDelta `on` (C8.unpack . B16.encodeBase16')
 
 instance ShowDelta LB.ByteString where
-  showDelta = showDelta `on` (LC8.unpack . LB16.encode)
+  showDelta = showDelta `on` (LC8.unpack . LB16.encodeBase16')
 
 tshow :: Show a => a -> Text
 tshow = fromString . ushow

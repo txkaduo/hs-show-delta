@@ -38,14 +38,22 @@ deriveShowDeltaOpts opts ty =
          NewtypeD _ nm tyVars Nothing c _ -> return (nm, tyVars, [c])
          _ -> fail "deriveShowDelta: tyCon may not be a type synonym."
 
+#if MIN_VERSION_template_haskell(2, 19, 0)
+     let (KindedTV _tyVar _ StarT) = last tyVars
+#else
      let (KindedTV _tyVar StarT) = last tyVars
-         instanceType           = conT ''ShowDelta `appT` (foldl apply (conT tyConName) tyVars)
+#endif
+     let instanceType           = conT ''ShowDelta `appT` (foldl apply (conT tyConName) tyVars)
 
      sequence [instanceD (return []) instanceType [genShowDelta opts cs]]
   where
+#if MIN_VERSION_template_haskell(2, 19, 0)
+    apply t (PlainTV name _)    = appT t (varT name)
+    apply t (KindedTV name _ _) = appT t (varT name)
+#else
     apply t (PlainTV name)    = appT t (varT name)
     apply t (KindedTV name _) = appT t (varT name)
-
+#endif
 
 genShowDelta :: Options -> [Con] -> Q Dec
 genShowDelta opts cs
